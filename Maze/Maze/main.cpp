@@ -148,6 +148,7 @@ void isValidRow(char* string, int RowNum, int MaxRows, int MaxWidth)
 
 
 	}
+ // add the cases inside the loop and delete their inside loops?
 
 	if (RowNum == 0)
 	{
