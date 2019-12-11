@@ -4,17 +4,17 @@
 
 class Square {
 
-	char data;
 	int row, col;
 	
 public:
 
 	Square() = default;
-	Square(char data, int row, int col);
+	Square(int row, int col);
+	~Square();
 
 
 	char getData();
-	void changeData(char data);
+	
 	int getRow();
 	int getCol();
 

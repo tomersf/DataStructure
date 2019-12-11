@@ -5,11 +5,15 @@ using namespace std;
 
 Queue::Queue(int size)
 {
-	head = 0;
+	head = 1;
 	tail = 0;
-	Arr_sz = 0;
+	Arr_sz = size;
 	Arr = new Square* [size];
-
+	for (int i = 0; i < size;i++)
+	{
+		Arr[i] = nullptr;
+	}
+	
 }
 
 Queue::~Queue()
@@ -23,7 +27,12 @@ Queue::~Queue()
 
 void Queue::MakeEmpty()
 {
-	head = 0;
+	for (int i = 0; i < Arr_sz;i++)
+	{
+		delete Arr[i];
+	}
+
+	head = 1;
 	tail = 0;
 }
 
@@ -64,16 +73,15 @@ void Queue::changeArrsz(int sz)
 
 void Queue::EnQueue(Square* sq)
 {
-	if (AddOne(tail) == head)
+	if (AddOne(AddOne(tail)) == head)
 	{
-
 		cout << "Error: Queue is Full \n"; 
 		exit(1);
 	}
 		
-	Arr[tail] = new Square();
-	Arr[tail] = sq;
+	/*Arr[tail] = new Square();*/
 	tail = AddOne(tail);
+	Arr[tail] = sq;
 
 }
 
@@ -85,7 +93,19 @@ Square* Queue::DeQueue()
 		exit(1);
 	}
 
+
 	Square* temp = Arr[head];
+	/*Arr[head] = nullptr;*/
 	head = AddOne(head);
 	return (temp);
+}
+
+Square* Queue::inArr(int index)
+{
+	return Arr[index];
+}
+
+int Queue::getSize() const
+{
+	return Arr_sz;
 }

@@ -22,6 +22,7 @@ void isValidRow(char* string, int& RowNum, int& MaxRows, int& MaxWidth);
 void printMaze(char** maze, int& rows, int& cols);
 void cleanBuffer(int& i);
 void SolveMaze(char** Maze, int& Height, int& Width);
+bool NotInQueue(Queue* Q, int row, int col);
 
 
 
@@ -129,7 +130,6 @@ void MakeMaze(int& Height, int& Width)
 	cout << endl;
 
 	SolveMaze(Maze, Height, Width);
-
 }
 
 void SolveMaze(char** Maze, int& Height, int& Width)
@@ -139,48 +139,74 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 	Queue Queue((Height * Width) - ((2 * Width)));
 	Queue.setSize(((Height * Width) - ((2 * Width))));
 
-	//if (Height != 3)
-	//{
-	//	Queue.changeArrsz((Height * Width) - ((2 * Width) + (2 * (Height - 2)))); // from total size we remove the limits of the maze.
-	//	Queue.setSize(((Height * Width) - ((2 * Width) + (2 * (Height - 2)))));
-	//}
-
-	Square* Sq = new Square(Maze[row][col], row, col);
+	Square* Sq = new Square(row, col);
 	Queue.EnQueue(Sq); // initialize the queue with square (1,0)
 	
 	while(!(Queue.IsEmpty())) // while the queue is not empty
 	{
-		Sq = Queue.DeQueue(); //////////////// NEED TO REMOVE THE POINTER IN THE ARRAY ? // 4x4 no exit gets thrown, need to check if no exit .
-		Sq->changeData('$');
-		Maze[Sq->getRow()][Sq->getCol()] = '$';
+		Sq = Queue.DeQueue();  
+		Maze[Sq->getRow()][Sq->getCol()] = '$'; // mark as visited
 		if (Sq->getRow() == Height - 2 && Sq->getCol() == Width - 1) // meaning we are at exit point
 		     break;
-
 
 			Square* Up, * Down, * Right, * Left;
 			if (Maze[Sq->getRow()][Sq->getCol() + 1] == ' ')
 			{
-				Right = new Square(Maze[Sq->getRow()][Sq->getCol() + 1], Sq->getRow(), Sq->getCol() + 1);
-				Queue.EnQueue(Right);
+				if (NotInQueue(&Queue,Sq->getRow(),Sq->getCol()+1))
+				{
+					Right = new Square(Sq->getRow(), Sq->getCol() + 1);
+					Queue.EnQueue(Right);
+				}
+				
 			}
 			if (Maze[Sq->getRow() + 1][Sq->getCol()] == ' ')
 			{
-				Down = new Square(Maze[Sq->getRow() + 1][Sq->getCol()], Sq->getRow() + 1, Sq->getCol());
-				Queue.EnQueue(Down);
+				if (NotInQueue(&Queue,Sq->getRow() + 1, Sq->getCol()))
+				{
+					Down = new Square(Sq->getRow() + 1, Sq->getCol());
+					Queue.EnQueue(Down);
+				}
+				
 			}
 			if (Maze[Sq->getRow()][Sq->getCol() - 1] == ' ')
 			{
-				Left = new Square(Maze[Sq->getRow()][Sq->getCol() - 1], Sq->getRow(), Sq->getCol() - 1);
-				Queue.EnQueue(Left);
+				if (NotInQueue(&Queue, Sq->getRow(),Sq->getCol() - 1))
+				{
+					Left = new Square(Sq->getRow(), Sq->getCol() - 1);
+					Queue.EnQueue(Left);
+				}
+				
 			}
 			if (Maze[Sq->getRow() - 1][Sq->getCol()] == ' ')
 			{
-				Up = new Square(Maze[Sq->getRow() - 1][Sq->getCol()], Sq->getRow() - 1, Sq->getCol());
-				Queue.EnQueue(Up);
+				if (NotInQueue(&Queue, Sq->getRow() - 1, Sq->getCol()))
+				{
+					Up = new Square(Sq->getRow() - 1, Sq->getCol());
+					Queue.EnQueue(Up);
+				}
+				
 			}
 
 	}
 	printMaze(Maze, Height, Width);
+}
+
+bool NotInQueue(Queue* Q,int row,int col)
+{
+	if (!(Q->IsEmpty()))
+	{
+		for (int i = 0; i < Q->getSize(); i++)
+		{
+			if (Q->inArr(i) != nullptr)
+			{
+				if (Q->inArr(i)->getRow() == row && Q->inArr(i)->getCol() == col)
+					return false;
+
+			}
+		}
+	}
+	
+	return true;
 }
 
 void cleanBuffer(int &i)

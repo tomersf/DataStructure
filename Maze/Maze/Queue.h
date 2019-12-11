@@ -19,4 +19,7 @@ public:
 	int AddOne(int x);
 	void setSize(int size);
 	void changeArrsz(int sz);
+	int getSize() const;
+	Square* inArr(int index);
+
 };
