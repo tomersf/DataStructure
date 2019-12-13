@@ -20,9 +20,11 @@ Queue::~Queue()
 {
 	for (int i = 0; i < Arr_sz; i++)
 	{
-		delete[] *Arr;
+		if(Arr[i]!= nullptr)
+		   delete[] Arr[i];
 	}
-	delete Arr;
+	if(Arr != nullptr)
+	   delete Arr;
 }
 
 void Queue::MakeEmpty()
@@ -30,8 +32,10 @@ void Queue::MakeEmpty()
 	for (int i = 0; i < Arr_sz;i++)
 	{
 		delete Arr[i];
+		Arr[i] = nullptr;
 	}
 
+	Arr = nullptr;
 	head = 1;
 	tail = 0;
 }

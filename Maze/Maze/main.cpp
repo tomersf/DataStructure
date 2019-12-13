@@ -3,18 +3,19 @@
 #include <stdlib.h>
 #include "Square.h"
 #include "Queue.h"
+#include "Stack.h"
 
 
 using namespace std;
 #pragma warning(disable : 4996)
 
-#define MAXLINES 25
-#define MAXROWS 80
-#define MINROW 1
-#define MINLINE 1
+#define MAXROWS 25
+#define MAXCOLS 80
+#define MINROWS 3
+#define MINCOLS 1
 
-void CreateMaze();
-//void RandomMaze();
+void getDimensions(int choice);
+void RandomMaze(int& height,int& width);
 bool ValidateHeight(int& height);
 bool ValidateWidth(int& width);
 void MakeMaze(int& Height, int& Width);
@@ -23,14 +24,13 @@ void printMaze(char** maze, int& rows, int& cols);
 void cleanBuffer(int& i);
 void SolveMaze(char** Maze, int& Height, int& Width);
 bool NotInQueue(Queue* Q, int row, int col);
+void MakeRandomMaze(char** Maze, int& Height, int& Width);
+bool HasUnvisitedNeighbors(Square* sq, char** Maze, Square*& Neighbor, int& Height, int& Width);
 
 
 
 int main()
 {
-
-	/*srand((unsigned)time(NULL));
-	int t = rand() % 4;*/
 	cout << "Please select your choice: " << endl << "1 - Entering your own maze" << endl
 		<< "2 - Create a random maze" << endl;
 		int choice;
@@ -39,13 +39,12 @@ int main()
 		switch (choice)
 		{
 		case 1: 
-			CreateMaze();
+			getDimensions(choice);
 			break;
 
 		case 2:
-			/*RandomMaze();
-			break;*/
-
+			getDimensions(choice);
+			break;
 
 		default:
 			cout << "Invalid choice, Exiting program";
@@ -56,11 +55,11 @@ int main()
 		return 0;
 }
 
-void CreateMaze()
+void getDimensions(int choice)
 {
 	int Height, Width;
 	bool valid;
-	cout << "Please Enter your number of lines, the max is: " << MAXLINES << endl;
+	cout << "Please Enter your number of rows, the max is: " << MAXROWS << endl;
 		cin >> Height;
 		valid = ValidateHeight(Height);
 		if (!valid)
@@ -69,7 +68,7 @@ void CreateMaze()
 			exit(1);
 		}
 
-	cout << "Please Enter your number of rows, the max is: " << MAXROWS << endl;
+	cout << "Please Enter your number of columns, the max is: " << MAXCOLS << endl;
 		cin >> Width;
 		valid = ValidateWidth(Width);
 		if (!valid)
@@ -78,19 +77,17 @@ void CreateMaze()
 			exit(1);
 		}
 
-		if (Height != Width)
-		{
-			cout << "Invalid input";
-			exit(1);
-		}
+		if (choice == 1)
+			MakeMaze(Height, Width);
+		else
+			RandomMaze(Height, Width);
 
-	MakeMaze(Height, Width);
 }
 
 
 bool ValidateHeight(int& height)
 {
-	if (height < MINROW || height > MAXROWS)
+	if (height < MINROWS || height > MAXROWS)
 		return false;
 
 	return true;
@@ -98,7 +95,7 @@ bool ValidateHeight(int& height)
 
 bool ValidateWidth(int& width)
 {
-	if (width < MINLINE || width > MAXLINES)
+	if (width < MINCOLS || width > MAXCOLS)
 		return false;
 
 	return true;
@@ -107,7 +104,7 @@ bool ValidateWidth(int& width)
 void MakeMaze(int& Height, int& Width)
 {
 	char** Maze = new char*[Height]; // creation of the matrix
-	char* row = new char[Width+1];
+	char* row = new char[Width];
 	int length;
 	for (int i = 0; i < Height; i++) // loop for entering all the rows
 	{
@@ -126,20 +123,23 @@ void MakeMaze(int& Height, int& Width)
 	
 	}
 	cout << endl;
-	printMaze(Maze,Height,Width);
-	cout << endl;
 
 	SolveMaze(Maze, Height, Width);
 }
 
 void SolveMaze(char** Maze, int& Height, int& Width)
 {
-	int row = 1, col = 0; // initialize the starting index's of the maze 
-
-	Queue Queue((Height * Width) - ((2 * Width)));
+	Queue Queue((Height * Width) - ((2 * Width))); // reducing the first row and last row(borders)
 	Queue.setSize(((Height * Width) - ((2 * Width))));
 
-	Square* Sq = new Square(row, col);
+	if (Queue.getSize() == 1) // Special case of maze 3x1
+	{
+		Maze[1][0] = '$';
+		printMaze(Maze, Height, Width);
+		return;
+	}
+
+	Square* Sq = new Square(1,0); // initialize the starting index's of the maze 
 	Queue.EnQueue(Sq); // initialize the queue with square (1,0)
 	
 	while(!(Queue.IsEmpty())) // while the queue is not empty
@@ -150,7 +150,7 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 		     break;
 
 			Square* Up, * Down, * Right, * Left;
-			if (Maze[Sq->getRow()][Sq->getCol() + 1] == ' ')
+			if (Maze[Sq->getRow()][Sq->getCol() + 1] == ' ') // Right Square of current square
 			{
 				if (NotInQueue(&Queue,Sq->getRow(),Sq->getCol()+1))
 				{
@@ -159,7 +159,7 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 				}
 				
 			}
-			if (Maze[Sq->getRow() + 1][Sq->getCol()] == ' ')
+			if (Maze[Sq->getRow() + 1][Sq->getCol()] == ' ') // Below square of current square
 			{
 				if (NotInQueue(&Queue,Sq->getRow() + 1, Sq->getCol()))
 				{
@@ -168,7 +168,7 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 				}
 				
 			}
-			if (Maze[Sq->getRow()][Sq->getCol() - 1] == ' ')
+			if (Maze[Sq->getRow()][Sq->getCol() - 1] == ' ') // Left square of current square
 			{
 				if (NotInQueue(&Queue, Sq->getRow(),Sq->getCol() - 1))
 				{
@@ -177,7 +177,7 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 				}
 				
 			}
-			if (Maze[Sq->getRow() - 1][Sq->getCol()] == ' ')
+			if (Maze[Sq->getRow() - 1][Sq->getCol()] == ' ') // Above square of current square
 			{
 				if (NotInQueue(&Queue, Sq->getRow() - 1, Sq->getCol()))
 				{
@@ -186,8 +186,8 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 				}
 				
 			}
-
 	}
+
 	printMaze(Maze, Height, Width);
 }
 
@@ -340,4 +340,135 @@ void printMaze(char** maze, int& rows, int& cols)
 		cout << endl;
 	}
 
+}
+
+void RandomMaze(int& Height, int& Width)
+{
+	char** Maze = new char* [Height];
+	for (int i = 0; i < Height; i++)
+	{
+		Maze[i] = new char[Width];
+		for (int j = 0; j < Width; j++)
+		{
+			if (i == 1 && j==0) // Entry of the maze
+				Maze[i][j] = '$';
+		
+			else if (i == Height - 2 && j == Width - 1) // Exit of maze
+				Maze[i][j] = ' ';
+			
+
+			else // All other squares will be *
+			Maze[i][j] = '*';
+		}
+	}
+	MakeRandomMaze(Maze, Height, Width);
+}
+
+void MakeRandomMaze(char** Maze, int& Height, int& Width)
+{
+	srand((unsigned)time(NULL));
+	int row = 1, col = 1;
+	Square* sq = new Square(row, col);
+	Stack stack(sq);
+
+	while (!(stack.IsEmpty())) // while the stack is not empty
+	{
+		Square* temp = stack.Pop();
+		Square* Neighbor;
+		Maze[temp->getRow()][temp->getCol()] = '$'; // mark as visited 
+		if (temp->getRow() == Height - 2 && temp->getCol() == Width - 1) // Meaning we are at exit point
+			break;
+
+		if (HasUnvisitedNeighbors(temp, Maze,Neighbor,Height,Width))
+		{
+			stack.Push(temp);
+			stack.Push(Neighbor);
+		}
+	}
+
+	printMaze(Maze, Height, Width);
+}
+
+bool HasUnvisitedNeighbors(Square* sq, char** Maze, Square*& Neighbor,int& Height,int& Width)
+{
+	int CurrentRow = sq->getRow();
+	int	CurrentCol = sq->getCol();
+
+	if (Height == 3) // Maze of 3 rows, can only go right.
+	{
+		if (Maze[CurrentRow][CurrentCol + 1] == '*' || Maze[CurrentRow][CurrentCol + 1] == ' ')
+		{
+			Maze[CurrentRow][CurrentCol + 1] = '$';
+			Neighbor = new Square(CurrentRow, CurrentCol + 1);
+			return true;
+		}
+	}
+	else // Maze have more then 3 rows
+	{
+		Square** Neighbors = new Square * [4]; // max size of 4
+		int counter = 0;
+		 
+		//Right Neighbor:
+		if (CurrentCol + 1 != Width - 1) // Check if the right neighbor is on the right border of maze.
+		{
+			if (Maze[CurrentRow][CurrentCol + 1] == '*' || Maze[CurrentRow][CurrentCol + 1] == ' ')
+			{
+				Neighbors[counter] = new Square(CurrentRow, CurrentCol + 1);
+				counter++;
+			}
+		}
+
+		if (CurrentCol + 1 == Width - 1 && CurrentRow == Height - 2) // if the Right neighbor is the exit of the maze
+		{
+			Neighbors[counter] = new Square(CurrentRow, CurrentCol + 1);
+			counter++;
+
+		}
+
+		//Below Neighbor:
+		if (CurrentRow + 1 != Height - 1)// Check if the below neighbor is on the bottom border of maze.
+		{
+			if (Maze[CurrentRow + 1][CurrentCol] == '*')
+			{
+				Neighbors[counter] = new Square(CurrentRow + 1, CurrentCol);
+				counter++;
+
+			}
+
+		}
+
+		//Left Neighbor:
+		if (CurrentCol - 1 != 0) // Check if the left neighbor is on the left border of maze.
+		{
+			if (Maze[CurrentRow][CurrentCol - 1] == '*')
+			{
+				Neighbors[counter] = new Square(CurrentRow, CurrentCol - 1);
+				counter++;
+			}
+
+		}
+		
+		//Above Neighbor:
+		if (CurrentRow - 1 != 0) // Check if the above neighbor is on the top border of maze.
+		{
+			if (Maze[CurrentRow - 1][CurrentCol] == '*')
+			{
+				Neighbors[counter] = new Square(CurrentRow - 1, CurrentCol);
+				counter++;
+			}
+		}
+		if (counter > 0)
+		{
+			int i = rand() % counter; // choose a rand neighbor
+			Neighbor = new Square (Neighbors[i]->getRow(),Neighbors[i]->getCol());
+
+			for (int j = 0; j < counter; j++) // clear space, no need for the neighbors anymore.
+			{
+				delete Neighbors[j];
+			}
+			delete[] Neighbors;
+			return true;
+		}
+	}
+	return false;
 }

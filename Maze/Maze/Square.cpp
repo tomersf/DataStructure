@@ -7,11 +7,6 @@ Square::Square(int row, int col)
 	this->col = col;
 }
 
-Square::~Square()
-{
-
-}
-
 
 int Square::getRow()
 {
