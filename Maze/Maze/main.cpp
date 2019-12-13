@@ -1,6 +1,7 @@
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 #include "Square.h"
 #include "Queue.h"
 #include "Stack.h"
