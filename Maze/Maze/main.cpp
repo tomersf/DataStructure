@@ -32,8 +32,9 @@ bool HasUnvisitedNeighbors(Square* sq, char** Maze, Square*& Neighbor, int& Heig
 
 int main()
 {
-	cout << "Please select your choice: " << endl << "1 - Entering your own maze" << endl
-		<< "2 - Create a random maze" << endl;
+	/*cout << "Please select your choice: " << endl << "1 - Entering your own maze" << endl
+		<< "2 - Create a random maze" << endl;*/
+	cout << "Maze: 1) From input 2) Random" << endl;
 		int choice;
 		cin >> choice;
 
@@ -60,7 +61,7 @@ void getDimensions(int choice)
 {
 	int Height, Width;
 	bool valid;
-	cout << "Please Enter your number of rows, the max is: " << MAXROWS << endl;
+	/*cout << "Please Enter your number of rows, the max is: " << MAXROWS << endl;*/
 		cin >> Height;
 		valid = ValidateHeight(Height);
 		if (!valid)
@@ -69,7 +70,7 @@ void getDimensions(int choice)
 			exit(1);
 		}
 
-	cout << "Please Enter your number of columns, the max is: " << MAXCOLS << endl;
+	/*cout << "Please Enter your number of columns, the max is: " << MAXCOLS << endl;*/
 		cin >> Width;
 		valid = ValidateWidth(Width);
 		if (!valid)
@@ -109,7 +110,7 @@ void MakeMaze(int& Height, int& Width)
 	int length;
 	for (int i = 0; i < Height; i++) // loop for entering all the rows
 	{
-		cout << "Enter row number " << i+1 << " as a string " << endl;
+		/*cout << "Enter row number " << i+1 << " as a string " << endl;*/
 		cleanBuffer(i);
 		cin.getline(row, Width+1);
 		length = strlen(row);
@@ -187,6 +188,12 @@ void SolveMaze(char** Maze, int& Height, int& Width)
 				}
 				
 			}
+	}
+
+	if (Maze[Height - 2][Width - 1] != '$') // checking to see if we solved the maze.
+	{
+		cout << "no solution";
+		return;
 	}
 
 	printMaze(Maze, Height, Width);
@@ -387,6 +394,11 @@ void MakeRandomMaze(char** Maze, int& Height, int& Width)
 		}
 	}
 
+	if (Maze[Height - 2][Width - 1] != '$') // checking to see if we solved the maze.
+	{
+		cout << "no solution";
+		return;
+	}
 	printMaze(Maze, Height, Width);
 }
 
