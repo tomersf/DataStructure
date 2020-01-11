@@ -13,15 +13,15 @@ private :
 
 public:
 	Person() = delete;
-	Person(char* str, int id);
-	const Person(const Person& other)
+	Person(char* str, int id); // ctor
+	const Person(const Person& other) // copy ctor
 	{
 		name = strdup(other.name);
 		id = other.id;
 
 	}
-	~Person();
-	Person(Person&& other)
+	~Person(); // dtor
+	Person(Person&& other) // move ctor
 	{
 		name = other.name;
 		id = other.id;

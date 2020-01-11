@@ -1,35 +1,28 @@
 #pragma once
-#include <stdio.h>
-#include <iostream>
-using namespace std;
-#include <time.h>
-#include "Person.h"
+#include "main.h"
 
-#define MAXSIZE 40
 
-void getPersons(Person*** Arr, int& size);
-bool PersonIsValid(Person** Arr, int& size, int& id,char* str);
-void exitProgram(Person** Arr, int& size);
-bool nameNOTvalid(char* str);
-int Select(Person** Arr, int left, int right, int i,int& NumComp);
-const Person& RandSelection(Person** Arr, int& index, int& NumComp,int& PersonsSize);
-int Partition(Person** Arr, int left, int right, int& NumComp);
-void swap(Person** p1, Person** p2);
-
+System TheSystem; // global system
 int main()
 {
-	Person** PersonsArr;
+	Person** PersonsArr = nullptr;
 	const Person* ThePerson;
-	int PersonsSize = 0, index, NumComp = 0;
-	getPersons(&PersonsArr, PersonsSize);
-
+	int* PersonsSize = &TheSystem.getPersonsSize();
+	int index, NumComp = 0;
+	
+	getPersons(&PersonsArr, *PersonsSize);
 	cout << "enter index: " << endl; // for testing
 	cin >> index;
-	if (index < 1 || index > PersonsSize)
-		exitProgram(PersonsArr, PersonsSize); // invalid index
+	if (index < 1 || index > *PersonsSize)
+		TheSystem.exitProgram(); // invalid index
 
+	Person** SelectionArr = nullptr, ** HeapArr=nullptr, ** TreeArr=nullptr;
+	CopyOriginalArr(SelectionArr, HeapArr, TreeArr);
 	
-	ThePerson = &RandSelection(PersonsArr, index, NumComp,PersonsSize);
+
+	ThePerson = &RandSelection(PersonsArr, index, NumComp,*PersonsSize);
+	//ThePerson = &selectHeap(PersonsArr, index, NumComp, PersonsSize);
+
 
 
 	return 1;
@@ -38,79 +31,28 @@ int main()
 
 void getPersons(Person*** Arr, int& size)
 {
-	int howMany, id;
-	char name[MAXSIZE];
+	int howMany;
+	char PersonDetails[MAXSIZE]; // full name with id
+	char name[MAXSIZE]; // only the name
+	int id = -1;
 	cout << "How many persons? :" << endl; // only for testing
 	cin >> howMany;
 	*Arr = new Person * [howMany];
+	TheSystem.getPersonsArr() = *Arr;
 
 	for (int i = 0; i < howMany; i++) // creation of the arr of persons
 	{
-		cin >> id;
-		cin.getline(name, MAXSIZE);
-		if (PersonIsValid(*Arr, size, id,name)) // check for validity in id and name.
+		if(i==0)
+		 TheSystem.cleanBuffer();
+		cin.getline(PersonDetails, MAXSIZE); // get the details of the person(id + full name)
+		TheSystem.ExtractDetails(PersonDetails, id, name);
+		
+		if (TheSystem.PersonsIsValid(id,name)) // check for validity in id and name.
 		{
 			(*Arr)[i] = new Person(name, id); // create the person if he's valid
-			size++; // increase the total arr
+			size++;
 		}
 	}
-
-}
-
-bool PersonIsValid(Person** Arr, int& size, int& id,char* str)
-{
-	if (id < 0)
-		exitProgram(Arr, size); 
-
-	if(!nameNOTvalid(str)) // if the name is not valid
-		exitProgram(Arr, size);
-
-	if (size == 0) // the arr of persons is empty and passed all the above tests.
-		return true;
-
-	else
-	{
-		for (int i = 0; i < size; i++)
-		{
-			if (id == Arr[i]->getID())
-				exitProgram(Arr, size);
-		}
-
-	}
-	return true;
-}
-
-bool nameNOTvalid(char* str)
-{
-	int length;
-	length = strlen(str);
-	if (length >= MAXSIZE) // if the length of the name is larger then MAXSIZE
-		return false;
-
-	for (int i = 0; i < length; i++) // check for invalid chars in the name
-	{
-		char ch = str[i];
-		if (ch < 'A' || (ch > 'Z' && ch < 'a') || ch > 'z') // checking if the char is in the range of chars on ASCII table.
-		{
-			if (ch != ' ')
-				return false;
-		}
-	}
-
-	return true;
-}
-
-
-void exitProgram(Person** Arr, int& size)
-{
-	for (int i = 0; i < size; i++)
-	{
-		delete Arr[i];
-	}
-	delete[]Arr;
-	cout << "invalid input" << endl;
-	exit(0);
-
 }
 
 const Person& RandSelection(Person** Arr, int& index, int& NumComp,int& size)
@@ -151,26 +93,40 @@ int Partition(Person** Arr, int left, int right,int& NumComp)
 		if (*Arr[j] < *pivot) // if the current element is smaller than the pivot
 		{
 			i++;
-			swap(&Arr[j], &Arr[i]);
+			TheSystem.swap(&Arr[j], &Arr[i]);
 			if (Arr[j]->getID() == pivot->getID())
 				pivotIndex = j;
 			else if (Arr[i]->getID() == pivot->getID())
 				pivotIndex = i;
 
 		}
-		NumComp++;
+		NumComp++; // increase the numcomp everytime we compare two persons
 	}
-	swap(&Arr[i + 1], &Arr[pivotIndex]);
+	TheSystem.swap(&Arr[i + 1], &Arr[pivotIndex]);
 	delete pivot;
 
-	return i+1;
+	return i+1; // return the index of the pivot
 }
 
+//const Person& selectHeap(Person** Arr, int k, int& NumComp,int& size)
+//{
+//
+//
+//
+//}
 
-void swap(Person** p1, Person** p2)
+void CopyOriginalArr(Person** RandomArr, Person** HeapArr, Person** TreeArr)
 {
-	Person* temp = *p1;
-	*p1 = *p2;
-	*p2 = temp;
+	int size = TheSystem.getPersonsSize();
+	Person** OriginalArr = TheSystem.getPersonsArr();
+	RandomArr = new Person * [size];
+	HeapArr = new Person * [size];
+	TreeArr = new Person * [size];
+	for (int i = 0; i <size ; i++)
+	{
+		RandomArr[i] = new Person(*OriginalArr[i]);
+		HeapArr[i] = new Person(*OriginalArr[i]);
+		TreeArr[i] = new Person(*OriginalArr[i]);
+	}
 
 }

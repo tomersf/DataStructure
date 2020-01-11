@@ -8,7 +8,7 @@ Person::Person(char* str, int id) : id(id) // constructur
 
 Person::~Person() // destructor
 {
-	delete name;
+	delete[] name;
 }
 
 int Person::getID()
